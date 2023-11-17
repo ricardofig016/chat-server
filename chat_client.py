@@ -27,13 +27,31 @@ def send(event=None):  # event is passed by binders
     if msg:
         # Do the actual sending
         client_socket.send(bytes(msg, "utf-8"))
-        append_message("[You] " + msg)
+        if not check_commands(msg):
+            append_message("[you] " + msg)
 
 
-def on_closing(event=None):
-    # Called whent the window is closed
+def check_commands(msg) -> bool:
+    if msg[0] != "/":
+        return False
+    msg = msg[1:]
+    if msg.startswith("nick"):
+        pass
+    elif msg.startswith("join"):
+        pass
+    elif msg.startswith("leave"):
+        pass
+    elif msg.startswith("bye"):
+        exit_socket()
+    else:
+        return False
+    return True
+
+
+def exit_socket():
     client_socket.close()
     top.quit()
+    sys.exit()
 
 
 # GUI initialization
@@ -57,7 +75,6 @@ entry_field.bind("<Return>", send)
 entry_field.pack()
 entry_field.focus_set()
 
-top.protocol("WM_DELETE_WINDOW", on_closing)
 
 # Other initializations
 if len(sys.argv) == 3:
@@ -73,6 +90,8 @@ ADDR = (HOST, PORT)
 # Establish the connection
 client_socket = socket(AF_INET, SOCK_STREAM)
 client_socket.connect(ADDR)
+
+top.protocol("WM_DELETE_WINDOW", exit_socket)
 
 # Create the receive thread and start the GUI
 receive_thread = Thread(target=receive)

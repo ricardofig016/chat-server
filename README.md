@@ -22,15 +22,7 @@ python3 chat_server.py 7777
 python3 chat_client.py
 ```
 
-## Comandos
-
-### Servidor
-
-- **/exit** : desliga o servidor
-- **/create _room_** : criar uma sala se nao existir
-- **/delete _room_** : apagar uma sala se existir
-
-### Cliente
+## Comandos do Cliente
 
 - **/nick _name_** : escolher um nome ou mudar de nome.
 - **/join _room_** : entrar numa sala de chat ou para mudar de sala.
