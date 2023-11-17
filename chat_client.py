@@ -6,7 +6,7 @@ import tkinter, sys
 
 def append_message(msg):
     # Add the received message to the message list
-    msg_list.insert(tkinter.END, msg + "\n")
+    msg_list.insert(tkinter.END, msg)
 
 
 def receive():
@@ -27,6 +27,7 @@ def send(event=None):  # event is passed by binders
     if msg:
         # Do the actual sending
         client_socket.send(bytes(msg, "utf-8"))
+        append_message("[You] " + msg)
 
 
 def on_closing(event=None):
