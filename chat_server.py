@@ -77,6 +77,12 @@ if __name__ == "__main__":
     connection_list = []
     nicknames = {}
     RECV_BUFFER = 4096  # Advisable to keep it as an exponent of 2
+
+    #Check if port is provided as an argument 
+    if len(sys.argv) != 2:
+        print("Usage: python chat_server.py <port>")
+        sys.exit(1)
+        
     PORT = int(sys.argv[1])
 
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

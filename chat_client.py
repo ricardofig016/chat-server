@@ -80,9 +80,12 @@ entry_field.focus_set()
 if len(sys.argv) == 3:
     HOST = sys.argv[1]
     PORT = int(sys.argv[2])
-else:
+elif len(sys.argv) == 2:
     HOST = "localhost"
-    PORT = 6789
+    PORT = int(sys.argv[1])
+else:
+    print("Usage: python chat_client.py [<host>] <porto>")
+    sys.exit(1)
 
 BUFSIZ = 1024
 ADDR = (HOST, PORT)
