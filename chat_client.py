@@ -84,7 +84,7 @@ elif len(sys.argv) == 2:
     HOST = "localhost"
     PORT = int(sys.argv[1])
 else:
-    print("Usage: python chat_client.py [<host>] <porto>")
+    print("Usage: python chat_client.py [<host>] <port>")
     sys.exit(1)
 
 BUFSIZ = 1024
