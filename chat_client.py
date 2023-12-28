@@ -38,14 +38,22 @@ def check_commands(msg) -> bool:
     if msg.startswith("nick"):
         pass
     elif msg.startswith("join"):
-        pass
+        join_room(msg[5:].strip())
     elif msg.startswith("leave"):
-        pass
+        leave_room()
     elif msg.startswith("bye"):
         exit_socket()
     else:
         return False
     return True
+
+def join_room(room_name):
+    client_socket.send(bytes(f"/join {room_name}", "utf-8"))
+    append_message(f"Joined room '{room_name}'")
+
+def leave_room():
+    client_socket.send(bytes("/leave", "utf-8"))
+    append_message("Left the room")
 
 
 def exit_socket():

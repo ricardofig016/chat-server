@@ -2,6 +2,7 @@
 
 import socket, select, sys
 
+rooms = {}
 
 # Function to broadcast chat messages to all connected clients
 def broadcast_message(data, sender_socket, connection_list, sender_name) -> None:
@@ -15,6 +16,17 @@ def broadcast_message(data, sender_socket, connection_list, sender_name) -> None
                 sock.close()
                 connection_list.remove(sock)
 
+# Function to broadcast chat messages to all connected clients in a specific room
+def broadcast_message_in_room(data, sender_socket, connection_list, sender_name, room_name) -> None:
+    for sock in connection_list:
+        if sock != server_socket and sock != sender_socket and nicknames[sock][1] == room_name:
+            try:
+                # Include the sender's nickname in the message
+                full_data = "[" + sender_name + "] " + data.decode()
+                sock.send(full_data.encode())
+            except:
+                sock.close()
+                connection_list.remove(sock)
 
 def check_commands(addr, sock, connection_list, nicknames, msg) -> bool:
     if msg[0] != "/":
@@ -26,15 +38,29 @@ def check_commands(addr, sock, connection_list, nicknames, msg) -> bool:
         else:
             print("ERROR")
     elif msg.startswith("join"):
-        pass
+        room_name = msg
+        join_room(sock, room_name)
+        print(f"{nicknames[sock][0]} joined room '{room_name}'")
     elif msg.startswith("leave"):
-        pass
+        leave_room(sock)
+        print(f"{nicknames[sock][0]} left the room")
     elif msg.startswith("bye"):
         exit_sock(addr, sock, connection_list)
     else:
         return False
     return True
 
+def join_room(sock, room_name):
+    nicknames[sock] = (nicknames[sock][0], room_name)
+    if room_name not in rooms:
+        rooms[room_name] = []
+    rooms[room_name].append(sock)
+
+def leave_room(sock):
+    room_name = nicknames[sock][1]
+    if room_name in rooms:
+        rooms[room_name].remove(sock)
+    nicknames[sock] = (nicknames[sock][0], "")
 
 def exit_sock(addr, sock, connection_list) -> None:
     print("Closing connection to (%s, %s)" % addr)
@@ -43,14 +69,16 @@ def exit_sock(addr, sock, connection_list) -> None:
 
 
 def change_nickname(sock, msg, nicknames) -> bool:
-    candidate = msg[5:]  # tudo depois de "/nick "
-    if candidate == "you":  # nick nao pode ser [you]
+    candidate = msg[5:].strip()  # everything after "/nick "
+    if candidate == "you":
         return False
-    for s, nick in nicknames.items():  # nick nao pode repetir
+
+    for s, (nick, room) in nicknames.items():
         if candidate == nick:
             return False
-    nicknames[sock] = candidate
-    # print(nicknames)
+
+    # Update the nickname and keep the room information
+    nicknames[sock] = (candidate, nicknames.get(sock, ("", ""))[1])
     return True
 
 
@@ -61,10 +89,16 @@ def processInput(addr, sock, connection_list, nicknames) -> bool:
             message = data.decode("utf-8").strip()
             if not check_commands(addr, sock, connection_list, nicknames, message):
                 if not sock in nicknames:
-                    nicknames[sock] = "guest"
-                nickname = nicknames[sock]
-                print(f"[{nickname}] {message}")
-                broadcast_message(data, sock, connection_list, nickname)
+                    nicknames[sock] = ("guest", "")  # Default room is an empty string
+                nickname, room_name = nicknames[sock]
+                
+                # Check if the user is in a room before broadcasting the message
+                if room_name:
+                    print(f"[{nickname}@{room_name}] {message}")
+                    broadcast_message_in_room(data, sock, connection_list, nickname, room_name)
+                else:
+                    print(f"[{nickname}] {message}")
+                    broadcast_message(data, sock, connection_list, nickname)
         else:
             return False
     except:
