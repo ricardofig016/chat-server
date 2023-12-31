@@ -4,6 +4,21 @@ import socket, select, sys
 
 rooms = {}
 
+def send_private_message(sender_sock, recipient_name, message):
+    # Check if the recipient exists in the nicknames dictionary
+    for sock, (nick, room) in nicknames.items():
+        if nick == recipient_name:
+            try:
+                # Send a private message to the recipient
+                private_msg = f"PRIVATE {nicknames[sender_sock][0]} {message}"
+                sock.send(private_msg.encode())
+                return "OK"
+            except:
+                return "ERROR"
+    
+    # If the recipient does not exist, return ERROR
+    return "ERROR"
+
 # Function to broadcast chat messages to all connected clients
 def broadcast_message(data, sender_socket, connection_list, sender_name) -> None:
     for sock in connection_list:
@@ -46,6 +61,11 @@ def check_commands(addr, sock, connection_list, nicknames, msg) -> bool:
         print(f"{nicknames[sock][0]} left the room")
     elif msg.startswith("bye"):
         exit_sock(addr, sock, connection_list)
+    elif msg.startswith("priv"):
+        _, recipient, private_msg = msg.split(" ", 2)
+        result = send_private_message(sock, recipient, private_msg)
+        print(result)
+        sock.send(result.encode())
     else:
         return False
     return True

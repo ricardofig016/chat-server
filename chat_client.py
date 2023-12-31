@@ -43,9 +43,15 @@ def check_commands(msg) -> bool:
         leave_room()
     elif msg.startswith("bye"):
         exit_socket()
+    elif msg.startswith("priv"):
+        _, recipient, private_msg = msg.split(" ", 2)
+        send_private_message(recipient, private_msg)
     else:
         return False
     return True
+
+def send_private_message(recipient, private_msg):
+    client_socket.send(bytes(f"/priv {recipient} {private_msg}", "utf-8"))
 
 def join_room(room_name):
     client_socket.send(bytes(f"/join {room_name}", "utf-8"))
