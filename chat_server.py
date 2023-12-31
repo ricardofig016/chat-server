@@ -10,7 +10,7 @@ def send_private_message(sender_sock, recipient_name, message):
         if nick == recipient_name:
             try:
                 # Send a private message to the recipient
-                private_msg = f"PRIVATE {nicknames[sender_sock][0]} {message}"
+                private_msg = f"PRIVATE {nicknames[sender_sock][0]} {message.split('/')[0]}"
                 sock.send(private_msg.encode())
                 return "OK"
             except:
@@ -55,7 +55,7 @@ def check_commands(addr, sock, connection_list, nicknames, msg) -> bool:
     elif msg.startswith("join"):
         room_name = msg
         join_room(sock, room_name)
-        print(f"{nicknames[sock][0]} joined room '{room_name}'")
+        print(f"{nicknames[sock][0]} joined room '{room_name[5:].split('/')[0]}'")
     elif msg.startswith("leave"):
         leave_room(sock)
         print(f"{nicknames[sock][0]} left the room")
