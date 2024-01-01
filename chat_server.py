@@ -114,11 +114,12 @@ def processInput(addr, sock, connection_list, nicknames) -> bool:
                 
                 # Check if the user is in a room before broadcasting the message
                 if room_name:
-                    print(f"[{nickname}@{room_name}] {message}")
+                    print(f"[{nickname}@{room_name[5:].split('/')[0]}] {message}")
                     broadcast_message_in_room(data, sock, connection_list, nickname, room_name)
                 else:
-                    print(f"[{nickname}] {message}")
-                    broadcast_message(data, sock, connection_list, nickname)
+                    print("ERROR")
+                    #print(f"[{nickname}] {message}")
+                    #broadcast_message(data, sock, connection_list, nickname)
         else:
             return False
     except:
