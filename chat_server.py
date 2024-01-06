@@ -19,18 +19,6 @@ def send_private_message(sender_sock, recipient_name, message):
     # If the recipient does not exist, return ERROR
     return "ERROR"
 
-# Function to broadcast chat messages to all connected clients
-def broadcast_message(data, sender_socket, connection_list, sender_name) -> None:
-    for sock in connection_list:
-        if sock != server_socket and sock != sender_socket:
-            try:
-                # Include the sender's nickname in the message
-                full_data = "[" + sender_name + "] " + data.decode()
-                sock.send(full_data.encode())
-            except:
-                sock.close()
-                connection_list.remove(sock)
-
 # Function to broadcast chat messages to all connected clients in a specific room
 def broadcast_message_in_room(data, sender_socket, connection_list, sender_name, room_name) -> None:
     for sock in connection_list:
@@ -39,6 +27,15 @@ def broadcast_message_in_room(data, sender_socket, connection_list, sender_name,
                 # Include the sender's nickname in the message
                 full_data = "[" + sender_name + "] " + data.decode()
                 sock.send(full_data.encode())
+            except:
+                sock.close()
+                connection_list.remove(sock)
+
+def notify_room(message, sender_socket, connection_list, room_name) -> None:
+    for sock in connection_list:
+        if sock != server_socket and sock != sender_socket and nicknames[sock][1] == room_name:
+            try:
+                sock.send(message.encode())
             except:
                 sock.close()
                 connection_list.remove(sock)
@@ -75,12 +72,14 @@ def join_room(sock, room_name):
     if room_name not in rooms:
         rooms[room_name] = []
     rooms[room_name].append(sock)
+    notify_room(f"{nicknames[sock][0]} joined the room", sock, connection_list, room_name)
 
 def leave_room(sock):
     room_name = nicknames[sock][1]
     if room_name in rooms:
         rooms[room_name].remove(sock)
     nicknames[sock] = (nicknames[sock][0], "")
+    notify_room(f"{nicknames[sock][0]} left the room", sock, connection_list, room_name)
 
 def exit_sock(addr, sock, connection_list) -> None:
     print("Closing connection to (%s, %s)" % addr)
@@ -118,8 +117,6 @@ def processInput(addr, sock, connection_list, nicknames) -> bool:
                     broadcast_message_in_room(data, sock, connection_list, nickname, room_name)
                 else:
                     print("ERROR")
-                    #print(f"[{nickname}] {message}")
-                    #broadcast_message(data, sock, connection_list, nickname)
         else:
             return False
     except:
